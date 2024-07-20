@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apostas Esportivas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e6f2e6; /* Verde claro */
+            color: #333;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #2e8b57; /* Verde escuro */
+            margin: 0 0 20px;
+            font-size: 2em;
+            
+        }
+        h1 i {
+            font-size: 1.5em;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #2e8b57; /* Verde escuro */
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #1f6d3c; /* Verde mais escuro */
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .balance {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-sizing: border-box;
+            overflow-x: auto; /* Adiciona rolagem horizontal se necessário */
+            display: block;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        th {
+            background-color: #2e8b57; /* Verde escuro */
+            color: #fff;
+        }
+        .green {
+            color: #4caf50; /* Verde para vitórias */
+        }
+        .red {
+            color: #f44336; /* Vermelho para derrotas */
+        }
+        @media (max-width: 1200px) {
+            .container {
+                padding: 10px;
+            }
+            table {
+                font-size: 0.9em;
+            }
+            th, td {
+                padding: 8px;
+            }
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 5px;
+            }
+            table {
+                font-size: 0.8em;
+            }
+            th, td {
+                padding: 5px;
+            }
+            button {
+                font-size: 14px;
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="intent://www.flashscore.com.br#Intent;scheme=https;package=com.flashscore.android;end">
+            <h1><i class="fas fa-futbol"></i>Apostas Esportivas</h1>
+        </a>
+        <div class="form-group">
+            <label for="banca">Valor da Banca:</label>
+            <input type="number" id="banca" placeholder="Insira o valor da banca" disabled>
+        </div>
+        <div class="form-group">
+            <label for="jogo">Jogo:</label>
+            <input type="text" id="jogo" placeholder="Insira o nome do jogo">
+        </div>
+        <div class="form-group">
+            <label for="tipoAposta">Tipo de Aposta:</label>
+            <select id="tipoAposta">
+                <option value="escanteio">Escanteio</option>
+                <option value="jogadorChuteGol">Jogador Chute a Gol</option>
+                <option value="overGol">Over Gol</option>
+                <option value="underGol">Under Gol</option>
+                <option value="vitoriaTime1">Vitória Time 1</option>
+                <option value="vitoriaTime2">Vitória Time 2</option>
+                <option value="empate">Empate</option>
+                <option value="jogadorFazerGol">Jogador Fazer Gol</option>
+                <option value="cartao">Cartão</option>
+                <option value="assistencia">Assistência</option>
+                <option value="apostaCriada">Aposta Criada</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="valorEntrada">Valor da Entrada:</label>
+            <input type="number" id="valorEntrada" placeholder="Insira o valor da entrada">
+        </div>
+        <div class="form-group">
+            <label for="payout">Payout (Odd):</label>
+            <input type="number" step="0.01" id="payout" placeholder="Insira o payout (odd)">
+        </div>
+        <div class="form-group">
+            <label for="situacao">Situação:</label>
+            <select id="situacao">
+                <option value="green">Green</option>
+                <option value="red">Red</option>
+            </select>
+        </div>
+        <button onclick="adicionarAposta()">
+            <i class="fas fa-plus"></i> Adicionar Aposta
+        </button>
+        <button onclick="exportarExcel()">
+            <i class="fas fa-file-excel"></i> Exportar para Excel
+        </button>
+        <button onclick="importarExcel()">
+            <i class="fas fa-file-import"></i> Importar de Excel
+        </button>
+
+        <div class="results">
+            <div class="balance" onclick="pedirSenha()">
+                <i class="fas fa-wallet"></i> Saldo: R$ <span id="saldo">0.00</span>
+            </div>
+            <h2>Histórico de Apostas</h2>
+            <div class="table-wrapper">
+                <table id="historicoApostas">
+                    <thead>
+                        <tr>
+                            <th>Jogo</th>
+                            <th>Tipo de Aposta</th>
+                            <th>Valor da Entrada</th>
+                            <th>Payout</th>
+                            <th>Resultado</th>
+                            <th>Saldo Após Aposta</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script>
+        let saldo = 0;
+        let bancaUsada = false;
+
+        function atualizarSaldo() {
+            document.getElementById('saldo').innerText = saldo.toFixed(2);
+        }
+
+        function salvarDados() {
+            const saldoAtual = saldo;
+            const historico = [];
+            const rows = document.querySelectorAll("#historicoApostas tbody tr");
+
+            rows.forEach(row => {
+                const cells = row.querySelectorAll("td");
+                const rowData = [];
+                cells.forEach(cell => rowData.push(cell.innerText));
+                historico.push(rowData);
+            });
+
+            localStorage.setItem('saldo', saldoAtual);
+            localStorage.setItem('historico', JSON.stringify(historico));
+        }
+
+        function carregarDados() {
+            const saldoSalvo = localStorage.getItem('saldo');
+            const historicoSalvo = JSON.parse(localStorage.getItem('historico'));
+
+            if (saldoSalvo) {
+                saldo = parseFloat(saldoSalvo);
+                atualizarSaldo();
+            }
+
+            if (historicoSalvo) {
+                const historicoApostas = document.getElementById('historicoApostas').getElementsByTagName('tbody')[0];
+                historicoSalvo.forEach(rowData => {
+                    const row = historicoApostas.insertRow();
+                    rowData.forEach(cellData => {
+                        const cell = row.insertCell();
+                        cell.innerText = cellData;
+                    });
+                });
+            }
+        }
+
+        window.onload = carregarDados;
+
+        function adicionarAposta() {
+            const jogo = document.getElementById('jogo').value;
+            const tipoAposta = document.getElementById('tipoAposta').value;
+            const valorEntrada = parseFloat(document.getElementById('valorEntrada').value);
+            const payout = parseFloat(document.getElementById('payout').value);
+            const situacao = document.getElementById('situacao').value;
+
+            if (!bancaUsada) {
+                saldo = parseFloat(document.getElementById('banca').value);
+                bancaUsada = true;
+            }
+
+            if (!jogo || isNaN(valorEntrada) || isNaN(payout)) {
+                alert('Por favor, preencha todos os campos corretamente.');
+                return;
+            }
+
+            const resultado = valorEntrada * payout;
+            const saldoAposAposta = saldo + (situacao === 'green' ? resultado - valorEntrada : -valorEntrada);
+
+            saldo = saldoAposAposta;
+            atualizarSaldo();
+
+            const historicoApostas = document.getElementById('historicoApostas').getElementsByTagName('tbody')[0];
+            const row = historicoApostas.insertRow();
+            row.insertCell().innerText = jogo;
+            row.insertCell().innerText = tipoAposta;
+            row.insertCell().innerText = valorEntrada.toFixed(2);
+            row.insertCell().innerText = payout.toFixed(2);
+            row.insertCell().innerText = situacao === 'green' ? 'Vitória' : 'Derrota';
+            row.insertCell().innerText = saldoAposAposta.toFixed(2);
+
+            salvarDados();
+        }
+
+        function exportarExcel() {
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.table_to_sheet(document.getElementById('historicoApostas'));
+            XLSX.utils.book_append_sheet(wb, ws, 'Histórico de Apostas');
+            XLSX.writeFile(wb, 'historico_apostas.xlsx');
+        }
+
+        function importarExcel() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.xlsx';
+
+            fileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const sheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(sheet);
+
+                    jsonData.forEach(row => {
+                        const historicoApostas = document.getElementById('historicoApostas').getElementsByTagName('tbody')[0];
+                        const tr = document.createElement('tr');
+                        Object.values(row).forEach(cellData => {
+                            const td = document.createElement('td');
+                            td.innerText = cellData;
+                            tr.appendChild(td);
+                        });
+                        historicoApostas.appendChild(tr);
+                    });
+
+                    // Atualiza o saldo se estiver na planilha importada
+                    const saldoImportado = jsonData.find(row => row['Saldo Após Aposta']);
+                    if (saldoImportado) {
+                        saldo = parseFloat(saldoImportado['Saldo Após Aposta']);
+                        atualizarSaldo();
+                    }
+
+                    salvarDados();
+                };
+
+                reader.readAsArrayBuffer(file);
+            });
+
+            fileInput.click();
+        }
+
+        function pedirSenha() {
+            const senha = prompt('Digite a senha para acessar o saldo');
+            if (senha === '3622') {
+                alert('Senha correta! Acesso concedido.');
+            } else {
+                alert('Senha incorreta.');
+            }
+        }
+    </script>
+</body>
+</html>
