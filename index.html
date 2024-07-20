@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apostas Esportivas</title>
+    <title>Sistema de Gerenciamento de Apostas Esportivas</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
@@ -29,7 +29,6 @@
             color: #2e8b57; /* Verde escuro */
             margin: 0 0 20px;
             font-size: 2em;
-            
         }
         h1 i {
             font-size: 1.5em;
@@ -130,9 +129,7 @@
 </head>
 <body>
     <div class="container">
-        <a href="intent://www.flashscore.com.br#Intent;scheme=https;package=com.flashscore.android;end">
-            <h1><i class="fas fa-futbol"></i>Apostas Esportivas</h1>
-        </a>
+        <h1><i class="fas fa-futbol"></i>Apostas Esportivas</h1>
         <div class="form-group">
             <label for="banca">Valor da Banca:</label>
             <input type="number" id="banca" placeholder="Insira o valor da banca" disabled>
@@ -241,17 +238,20 @@
 
             if (historicoSalvo) {
                 const historicoApostas = document.getElementById('historicoApostas').getElementsByTagName('tbody')[0];
-                historicoSalvo.forEach(rowData => {
-                    const row = historicoApostas.insertRow();
-                    rowData.forEach(cellData => {
-                        const cell = row.insertCell();
-                        cell.innerText = cellData;
+                historicoApostas.innerHTML = '';
+
+                historicoSalvo.forEach(row => {
+                    const novaLinha = historicoApostas.insertRow();
+                    row.forEach((cell, index) => {
+                        const novaCelula = novaLinha.insertCell();
+                        novaCelula.innerText = cell.toUpperCase();
+                        if (index === 4) {
+                            novaCelula.className = cell.toLowerCase() === 'green' ? 'green' : 'red';
+                        }
                     });
                 });
             }
         }
-
-        window.onload = carregarDados;
 
         function adicionarAposta() {
             const jogo = document.getElementById('jogo').value;
@@ -260,32 +260,31 @@
             const payout = parseFloat(document.getElementById('payout').value);
             const situacao = document.getElementById('situacao').value;
 
-            if (!bancaUsada) {
-                saldo = parseFloat(document.getElementById('banca').value);
-                bancaUsada = true;
+            if (jogo && tipoAposta && !isNaN(valorEntrada) && !isNaN(payout)) {
+                const lucro = valorEntrada * payout;
+                const resultado = situacao === 'green' ? lucro - valorEntrada : -valorEntrada;
+
+                saldo += resultado;
+                atualizarSaldo();
+
+                const tabela = document.getElementById('historicoApostas').getElementsByTagName('tbody')[0];
+                const novaLinha = tabela.insertRow();
+                novaLinha.insertCell().innerText = jogo;
+                novaLinha.insertCell().innerText = tipoAposta;
+                novaLinha.insertCell().innerText = valorEntrada.toFixed(2);
+                novaLinha.insertCell().innerText = payout.toFixed(2);
+                novaLinha.insertCell().innerText = situacao.toUpperCase();
+                novaLinha.insertCell().innerText = saldo.toFixed(2);
+
+                if (!bancaUsada) {
+                    document.getElementById('banca').disabled = true;
+                    bancaUsada = true;
+                }
+
+                salvarDados();
+            } else {
+                alert("Preencha todos os campos corretamente.");
             }
-
-            if (!jogo || isNaN(valorEntrada) || isNaN(payout)) {
-                alert('Por favor, preencha todos os campos corretamente.');
-                return;
-            }
-
-            const resultado = valorEntrada * payout;
-            const saldoAposAposta = saldo + (situacao === 'green' ? resultado - valorEntrada : -valorEntrada);
-
-            saldo = saldoAposAposta;
-            atualizarSaldo();
-
-            const historicoApostas = document.getElementById('historicoApostas').getElementsByTagName('tbody')[0];
-            const row = historicoApostas.insertRow();
-            row.insertCell().innerText = jogo;
-            row.insertCell().innerText = tipoAposta;
-            row.insertCell().innerText = valorEntrada.toFixed(2);
-            row.insertCell().innerText = payout.toFixed(2);
-            row.insertCell().innerText = situacao === 'green' ? 'Vitória' : 'Derrota';
-            row.insertCell().innerText = saldoAposAposta.toFixed(2);
-
-            salvarDados();
         }
 
         function exportarExcel() {
@@ -296,56 +295,63 @@
         }
 
         function importarExcel() {
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = '.xlsx';
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.xlsx';
 
-            fileInput.addEventListener('change', (event) => {
+            input.addEventListener('change', (event) => {
                 const file = event.target.files[0];
-                const reader = new FileReader();
-
-                reader.onload = (e) => {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const sheetName = workbook.SheetNames[0];
-                    const sheet = workbook.Sheets[sheetName];
-                    const jsonData = XLSX.utils.sheet_to_json(sheet);
-
-                    jsonData.forEach(row => {
-                        const historicoApostas = document.getElementById('historicoApostas').getElementsByTagName('tbody')[0];
-                        const tr = document.createElement('tr');
-                        Object.values(row).forEach(cellData => {
-                            const td = document.createElement('td');
-                            td.innerText = cellData;
-                            tr.appendChild(td);
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const sheetName = workbook.SheetNames[0];
+                        const worksheet = workbook.Sheets[sheetName];
+                        const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                        
+                        const tabela = document.getElementById('historicoApostas').getElementsByTagName('tbody')[0];
+                        tabela.innerHTML = '';
+                        
+                        json.forEach((row, rowIndex) => {
+                            if (rowIndex > 0) {
+                                const novaLinha = tabela.insertRow();
+                                row.forEach((cell, cellIndex) => {
+                                    const novaCelula = novaLinha.insertCell();
+                                    novaCelula.innerText = cell;
+                                    if (cellIndex === 4) {
+                                        novaCelula.className = cell.toLowerCase() === 'green' ? 'green' : 'red';
+                                    }
+                                });
+                            }
                         });
-                        historicoApostas.appendChild(tr);
-                    });
-
-                    // Atualiza o saldo se estiver na planilha importada
-                    const saldoImportado = jsonData.find(row => row['Saldo Após Aposta']);
-                    if (saldoImportado) {
-                        saldo = parseFloat(saldoImportado['Saldo Após Aposta']);
-                        atualizarSaldo();
-                    }
-
-                    salvarDados();
-                };
-
-                reader.readAsArrayBuffer(file);
+                    };
+                    reader.readAsArrayBuffer(file);
+                }
             });
 
-            fileInput.click();
+            input.click();
         }
 
         function pedirSenha() {
-            const senha = prompt('Digite a senha para acessar o saldo');
-            if (senha === '3622') {
-                alert('Senha correta! Acesso concedido.');
+            const senha = prompt("Digite a senha para resetar o sistema:");
+            if (senha === "3622") {
+                resetarSistema();
             } else {
-                alert('Senha incorreta.');
+                alert("Senha incorreta.");
             }
         }
+
+        function resetarSistema() {
+            saldo = 0;
+            atualizarSaldo();
+            document.getElementById('historicoApostas').getElementsByTagName('tbody')[0].innerHTML = '';
+            bancaUsada = false;
+            document.getElementById('banca').disabled = false;
+            localStorage.clear();
+        }
+
+        document.addEventListener('DOMContentLoaded', carregarDados);
     </script>
 </body>
 </html>
